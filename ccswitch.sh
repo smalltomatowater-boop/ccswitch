@@ -65,13 +65,15 @@ EOF
   echo "   設定ファイル: $SETTINGS"
 }
 
-# ── Qwen3.5-Plus (DashScope) 設定 ────────────────────────────────────────────
+# ── Qwen3.5-Plus (DashScope CodingPlus) 設定 ─────────────────────────────────
 use_qwen35() {
   ensure_settings_dir
   stop_proxy
+  # API キーはクリップボードから取得
+  DASHSCOPE_CODING_API_KEY=$(pbpaste)
   if [ -z "$DASHSCOPE_CODING_API_KEY" ]; then
-    echo "❌ DASHSCOPE_CODING_API_KEY が設定されていません"
-    echo "   export DASHSCOPE_CODING_API_KEY=\"sk-...\" を実行してください"
+    echo "❌ クリップボードが空です"
+    echo "   事前に CodingPlus の API キーをコピーしてください"
     return 1
   fi
   cat > "$SETTINGS" << EOF
@@ -84,7 +86,7 @@ use_qwen35() {
   "model": "qwen3.5-plus"
 }
 EOF
-  echo "✅ Qwen3.5-Plus (DashScope) に切り替えました"
+  echo "✅ Qwen3.5-Plus (DashScope CodingPlus) に切り替えました"
   echo "   設定ファイル: $SETTINGS"
 }
 
