@@ -4,6 +4,8 @@
 # ⚠️ 使用前に API キーを設定してください
 #   Qwen (DashScope) 用:
 #     export DASHSCOPE_API_KEY="sk-..."
+#   Qwen3.5 (DashScope CodingPlus) 用:
+#     export DASHSCOPE_CODING_API_KEY="sk-..."
 #   GLM (Z.ai) 用:
 #     export ZAI_API_KEY="..."
 #
@@ -67,15 +69,15 @@ EOF
 use_qwen35() {
   ensure_settings_dir
   stop_proxy
-  if [ -z "$DASHSCOPE_API_KEY" ]; then
-    echo "❌ DASHSCOPE_API_KEY が設定されていません"
-    echo "   export DASHSCOPE_API_KEY=\"sk-...\" を実行してください"
+  if [ -z "$DASHSCOPE_CODING_API_KEY" ]; then
+    echo "❌ DASHSCOPE_CODING_API_KEY が設定されていません"
+    echo "   export DASHSCOPE_CODING_API_KEY=\"sk-...\" を実行してください"
     return 1
   fi
   cat > "$SETTINGS" << EOF
 {
   "env": {
-    "ANTHROPIC_AUTH_TOKEN": "${DASHSCOPE_API_KEY}",
+    "ANTHROPIC_AUTH_TOKEN": "${DASHSCOPE_CODING_API_KEY}",
     "ANTHROPIC_BASE_URL": "https://coding-intl.dashscope.aliyuncs.com/apps/anthropic",
     "ANTHROPIC_MODEL": "qwen3.5-plus"
   },

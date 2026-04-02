@@ -37,7 +37,7 @@ export ZAI_API_KEY="..."             # for GLM
 |---|---|---|
 | `claude` | Claude Sonnet 4.6 (Anthropic) | — (uses Anthropic account) |
 | `qwen` | Qwen3.6-Plus (DashScope) | `DASHSCOPE_API_KEY` |
-| `qwen35` | Qwen3.5-Plus (DashScope CodingPlus) | `DASHSCOPE_API_KEY` |
+| `qwen35` | Qwen3.5-Plus (DashScope CodingPlus) | `DASHSCOPE_CODING_API_KEY` |
 | `qwen-think` | Qwen3.6-Plus with thinking mode | `DASHSCOPE_API_KEY` |
 | `glm` | GLM-5.1 (Z.ai) | `ZAI_API_KEY` |
 | `proxy` | Proxy mode (hot-switch via `/model`) | — |
@@ -88,6 +88,9 @@ Set environment variables in your shell profile (`~/.zshrc` / `~/.bashrc`):
 ```bash
 # DashScope (Qwen)
 export DASHSCOPE_API_KEY="sk-..."
+
+# DashScope CodingPlus (Qwen3.5)
+export DASHSCOPE_CODING_API_KEY="sk-..."
 
 # Z.ai (GLM)
 export ZAI_API_KEY="..."
