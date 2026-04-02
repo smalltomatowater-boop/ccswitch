@@ -141,6 +141,7 @@ EOF
 # ── プロキシモード ─────────────────────────────────────────────────────────
 use_proxy() {
   ensure_settings_dir
+  stop_proxy
   cat > "$SETTINGS" << EOF
 {
   "env": {
