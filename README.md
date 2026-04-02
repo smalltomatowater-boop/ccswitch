@@ -16,7 +16,7 @@ Supports **Claude (Anthropic)**, **Qwen (DashScope)**, **GLM (Z.ai)**, and **pro
 
 ```bash
 # Download
-curl -O https://raw.githubusercontent.com/taku-y/ccswitch/main/ccswitch.sh
+curl -O https://raw.githubusercontent.com/smalltomatowater-boop/ccswitch/main/ccswitch.sh
 chmod +x ccswitch.sh
 
 # Set up your API keys
@@ -66,7 +66,7 @@ Then use `/model` inside Claude Code to switch models on the fly:
 ### Option 1: Direct download
 
 ```bash
-curl -O https://raw.githubusercontent.com/taku-y/ccswitch/main/ccswitch.sh
+curl -O https://raw.githubusercontent.com/smalltomatowater-boop/ccswitch/main/ccswitch.sh
 chmod +x ccswitch.sh
 sudo mv ccswitch.sh /usr/local/bin/ccswitch
 ```
@@ -76,7 +76,7 @@ Then just run `ccswitch` from anywhere.
 ### Option 2: Clone
 
 ```bash
-git clone https://github.com/taku-y/ccswitch.git
+git clone https://github.com/smalltomatowater-boop/ccswitch.git
 cd ccswitch
 ln -s "$PWD/ccswitch.sh" /usr/local/bin/ccswitch
 ```
