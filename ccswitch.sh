@@ -39,7 +39,7 @@ use_claude() {
 }
 EOF
   echo "✅ Claude (Anthropic Sonnet) に切り替えました"
-  echo "   設定ファイル: $SETTINGS"
+  echo "   設定ファイル：$SETTINGS"
 }
 
 # ── Qwen3.6-Plus (DashScope) 設定 ────────────────────────────────────────────
@@ -62,18 +62,16 @@ use_qwen() {
 }
 EOF
   echo "✅ Qwen3.6-Plus (DashScope) に切り替えました"
-  echo "   設定ファイル: $SETTINGS"
+  echo "   設定ファイル：$SETTINGS"
 }
 
 # ── Qwen3.5-Plus (DashScope CodingPlus) 設定 ─────────────────────────────────
 use_qwen35() {
   ensure_settings_dir
   stop_proxy
-  # API キーはクリップボードから取得
-  DASHSCOPE_CODING_API_KEY=$(pbpaste)
   if [ -z "$DASHSCOPE_CODING_API_KEY" ]; then
-    echo "❌ クリップボードが空です"
-    echo "   事前に CodingPlus の API キーをコピーしてください"
+    echo "❌ DASHSCOPE_CODING_API_KEY が設定されていません"
+    echo "   export DASHSCOPE_CODING_API_KEY=\"sk-...\" を実行してください"
     return 1
   fi
   cat > "$SETTINGS" << EOF
@@ -87,7 +85,7 @@ use_qwen35() {
 }
 EOF
   echo "✅ Qwen3.5-Plus (DashScope CodingPlus) に切り替えました"
-  echo "   設定ファイル: $SETTINGS"
+  echo "   設定ファイル：$SETTINGS"
 }
 
 # ── Qwen3.6-Plus (思考モード) 設定 ───────────────────────────────────────────
@@ -111,7 +109,7 @@ use_qwen_think() {
 }
 EOF
   echo "✅ Qwen3.6-Plus (DashScope・思考モード) に切り替えました"
-  echo "   設定ファイル: $SETTINGS"
+  echo "   設定ファイル：$SETTINGS"
 }
 
 # ── GLM-5.1 (Z.ai) 設定 ─────────────────────────────────────────
@@ -137,7 +135,7 @@ use_glm() {
 }
 EOF
   echo "✅ GLM-5.1（Z.ai） に切り替えました"
-  echo "   設定ファイル: $SETTINGS"
+  echo "   設定ファイル：$SETTINGS"
 }
 
 # ── プロキシモード ─────────────────────────────────────────────────────────
@@ -164,10 +162,10 @@ start_proxy() {
     sleep 1
     if lsof -i :${PROXY_PORT} >/dev/null 2>&1; then
       echo "✅ ccproxy 起動しました (port ${PROXY_PORT})"
-      echo "   ログ: $PROXY_LOG"
+      echo "   ログ：$PROXY_LOG"
     else
       echo "❌ ccproxy の起動に失敗しました"
-      echo "   ログ: $PROXY_LOG"
+      echo "   ログ：$PROXY_LOG"
       cat "$PROXY_LOG"
     fi
   fi
@@ -193,18 +191,18 @@ show_status() {
 
   # 使用中のモデルを判定
   if grep -q "localhost:${PROXY_PORT}" "$SETTINGS" 2>/dev/null; then
-    echo "🔀 現在: プロキシモード (/model で切り替え)"
-    echo "   プロキシ: $(lsof -i :${PROXY_PORT} >/dev/null 2>&1 && echo '起動中 ✅' || echo '停止中 ❌')"
+    echo "🔀 現在：プロキシモード (/model で切り替え)"
+    echo "   プロキシ：$(lsof -i :${PROXY_PORT} >/dev/null 2>&1 && echo '起動中 ✅' || echo '停止中 ❌')"
   elif grep -q "alwaysThinkingEnabled" "$SETTINGS" 2>/dev/null; then
-    echo "🟠 現在: Qwen (DashScope・思考モード)"
+    echo "🟠 現在：Qwen (DashScope・思考モード)"
   elif grep -q "qwen" "$SETTINGS" 2>/dev/null; then
-    echo "🟡 現在: Qwen (DashScope) モード"
+    echo "🟡 現在：Qwen (DashScope) モード"
   elif grep -q "claude" "$SETTINGS" 2>/dev/null; then
-    echo "🟣 現在: Claude (Anthropic) モード"
+    echo "🟣 現在：Claude (Anthropic) モード"
   elif grep -q "glm" "$SETTINGS" 2>/dev/null; then
-    echo "🟣 現在: GLM (Z.ai) モード"
+    echo "🟣 現在：GLM (Z.ai) モード"
   else
-    echo "⚪ 現在: デフォルト設定（Anthropicアカウントに依存）"
+    echo "⚪ 現在：デフォルト設定（Anthropic アカウントに依存）"
   fi
 }
 
