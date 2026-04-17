@@ -27,10 +27,12 @@ Claude Code はトークン消費が激しく、すぐに上限に達する。
 API キーを環境変数に設定する。
 
 ```bash
-export DASHSCOPE_API_KEY="sk-..."           # Qwen3.6 用
-export ALIBABACODINGPLAN_API_KEY="sk-..."   # Qwen3.5 用 (proxy で使用)
+export DASHSCOPE_API_KEY="sk-..."           # Qwen3.6 直結用
+export ALIBABACODINGPLAN_API_KEY="sk-..."   # Qwen3.5 用 (proxy モードで使用・Coding Plan API)
 export ZAI_API_KEY="..."                     # GLM 用
 ```
+
+> **proxy モードの `qwen` は DashScope Coding Plan API を使用。通常の DashScope より大幅に安価。**
 
 GLM キーは `~/.claude/zai_api_key.sh` に記述しても読み込まれる。
 
@@ -49,8 +51,8 @@ ccswitch proxy
 | `/model sonnet` | Claude Sonnet 4.6 |
 | `/model opus-4-5` | Claude Opus 4.5 (Pro plan) |
 | `/model haiku` | Claude Haiku 4.5 |
-| `/model qwen` | Qwen3.5-Plus (DashScope Coding Plan) |
-| `/model qwen-think` | Qwen3.5-Plus 思考モード (DashScope Coding Plan) |
+| `/model qwen` | Qwen3.5-Plus (DashScope **Coding Plan** ※安価) |
+| `/model qwen-think` | Qwen3.5-Plus 思考モード (DashScope **Coding Plan** ※安価) |
 | `/model glm` | GLM-5.1 (Z.ai) |
 
 #### 2. 直結モードで起動
@@ -134,8 +136,8 @@ Then switch models inside Claude Code with `/model`:
 | `/model sonnet` | Claude Sonnet 4.6 |
 | `/model opus-4-5` | Claude Opus 4.5 (Pro plan) |
 | `/model haiku` | Claude Haiku 4.5 |
-| `/model qwen` | Qwen3.5-Plus (DashScope Coding Plan) |
-| `/model qwen-think` | Qwen3.5-Plus with thinking (DashScope Coding Plan) |
+| `/model qwen` | Qwen3.5-Plus (DashScope **Coding Plan** ※cheaper) |
+| `/model qwen-think` | Qwen3.5-Plus with thinking (DashScope **Coding Plan** ※cheaper) |
 | `/model glm` | GLM-5.1 (Z.ai) |
 
 #### 2. Direct mode
