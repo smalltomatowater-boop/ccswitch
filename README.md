@@ -44,14 +44,14 @@ ccswitch proxy
 
 以降は Claude Code のセッション内で `/model` コマンドで切り替えられる。
 
-```
-/model sonnet      # Claude Sonnet 4.6
-/model opus-4-5    # Claude Opus 4.5 (Pro plan)
-/model haiku       # Claude Haiku 4.5
-/model qwen        # Qwen3.5-Plus (DashScope)
-/model qwen-think  # Qwen3.5-Plus 思考モード
-/model glm         # GLM-5.1 (Z.ai)
-```
+| コマンド | モデル |
+|----------|--------|
+| `/model sonnet` | Claude Sonnet 4.6 |
+| `/model opus-4-5` | Claude Opus 4.5 (Pro plan) |
+| `/model haiku` | Claude Haiku 4.5 |
+| `/model qwen` | Qwen3.5-Plus (DashScope Coding Plan) |
+| `/model qwen-think` | Qwen3.5-Plus 思考モード (DashScope Coding Plan) |
+| `/model glm` | GLM-5.1 (Z.ai) |
 
 #### 2. 直結モードで起動
 
@@ -129,14 +129,14 @@ ccswitch proxy
 
 Then switch models inside Claude Code with `/model`:
 
-```
-/model sonnet      # Claude Sonnet 4.6
-/model opus-4-5    # Claude Opus 4.5 (Pro plan)
-/model haiku       # Claude Haiku 4.5
-/model qwen        # Qwen3.5-Plus (DashScope)
-/model qwen-think  # Qwen3.5-Plus with thinking mode
-/model glm         # GLM-5.1 (Z.ai)
-```
+| Command | Model |
+|---------|-------|
+| `/model sonnet` | Claude Sonnet 4.6 |
+| `/model opus-4-5` | Claude Opus 4.5 (Pro plan) |
+| `/model haiku` | Claude Haiku 4.5 |
+| `/model qwen` | Qwen3.5-Plus (DashScope Coding Plan) |
+| `/model qwen-think` | Qwen3.5-Plus with thinking (DashScope Coding Plan) |
+| `/model glm` | GLM-5.1 (Z.ai) |
 
 #### 2. Direct mode
 
