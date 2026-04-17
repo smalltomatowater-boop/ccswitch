@@ -4,8 +4,6 @@
 # ⚠️ 使用前に API キーを設定してください
 #   Qwen (DashScope) 用:
 #     export DASHSCOPE_API_KEY="sk-..."
-#   Qwen3.5 (DashScope CodingPlus) 用:
-#     export DASHSCOPE_CODING_API_KEY="sk-..."
 #   GLM (Z.ai) 用:
 #     export ZAI_API_KEY="..."
 #
@@ -25,6 +23,12 @@ PROXY_SCRIPT="$HOME/script/ccproxy.js"
 PROXY_PORT=18273
 PROXY_LOG="/tmp/ccproxy.log"
 
+GEMMA_SERVER_SCRIPT="$HOME/script/gemma4-server.sh"
+GEMMA_PROXY_SCRIPT="$HOME/script/gemma-anthropic-proxy.js"
+GEMMA_SERVER_PORT=8081
+GEMMA_PROXY_PORT=18275
+GEMMA_LOG="/tmp/gemma4.log"
+
 ensure_settings_dir() {
   mkdir -p "$(dirname "$SETTINGS")"
 }
@@ -35,11 +39,15 @@ use_claude() {
   stop_proxy
   cat > "$SETTINGS" << 'EOF'
 {
-  "model": "claude-sonnet-4-6"
+  "model": "claude-sonnet-4-5",
+  "availableModels": ["claude-sonnet-4-5", "haiku"],
+  "env": {
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-5"
+  }
 }
 EOF
   echo "✅ Claude (Anthropic Sonnet) に切り替えました"
-  echo "   設定ファイル：$SETTINGS"
+  echo "   設定ファイル: $SETTINGS"
 }
 
 # ── Qwen3.6-Plus (DashScope) 設定 ────────────────────────────────────────────
@@ -62,30 +70,30 @@ use_qwen() {
 }
 EOF
   echo "✅ Qwen3.6-Plus (DashScope) に切り替えました"
-  echo "   設定ファイル：$SETTINGS"
+  echo "   設定ファイル: $SETTINGS"
 }
 
-# ── Qwen3.5-Plus (DashScope CodingPlus) 設定 ─────────────────────────────────
+# ── Qwen3.5-Plus (DashScope) 設定 ────────────────────────────────────────────
 use_qwen35() {
   ensure_settings_dir
   stop_proxy
-  if [ -z "$DASHSCOPE_CODING_API_KEY" ]; then
-    echo "❌ DASHSCOPE_CODING_API_KEY が設定されていません"
-    echo "   export DASHSCOPE_CODING_API_KEY=\"sk-...\" を実行してください"
+  if [ -z "$ALIBABACODINGPLAN_API_KEY" ]; then
+    echo "❌ ALIBABACODINGPLAN_API_KEY が設定されていません"
+    echo "   export ALIBABACODINGPLAN_API_KEY=\"sk-...\" を実行してください"
     return 1
   fi
   cat > "$SETTINGS" << EOF
 {
   "env": {
-    "ANTHROPIC_AUTH_TOKEN": "${DASHSCOPE_CODING_API_KEY}",
+    "ANTHROPIC_AUTH_TOKEN": "${ALIBABACODINGPLAN_API_KEY}",
     "ANTHROPIC_BASE_URL": "https://coding-intl.dashscope.aliyuncs.com/apps/anthropic",
     "ANTHROPIC_MODEL": "qwen3.5-plus"
   },
   "model": "qwen3.5-plus"
 }
 EOF
-  echo "✅ Qwen3.5-Plus (DashScope CodingPlus) に切り替えました"
-  echo "   設定ファイル：$SETTINGS"
+  echo "✅ Qwen3.5-Plus (DashScope) に切り替えました"
+  echo "   設定ファイル: $SETTINGS"
 }
 
 # ── Qwen3.6-Plus (思考モード) 設定 ───────────────────────────────────────────
@@ -109,7 +117,7 @@ use_qwen_think() {
 }
 EOF
   echo "✅ Qwen3.6-Plus (DashScope・思考モード) に切り替えました"
-  echo "   設定ファイル：$SETTINGS"
+  echo "   設定ファイル: $SETTINGS"
 }
 
 # ── GLM-5.1 (Z.ai) 設定 ─────────────────────────────────────────
@@ -135,23 +143,94 @@ use_glm() {
 }
 EOF
   echo "✅ GLM-5.1（Z.ai） に切り替えました"
-  echo "   設定ファイル：$SETTINGS"
+  echo "   設定ファイル: $SETTINGS"
 }
 
-# ── プロキシモード ─────────────────────────────────────────────────────────
-use_proxy() {
+# ── Gemma 4 (MLX ローカル) 設定 ───────────────────────────────────────────
+use_gemma() {
   ensure_settings_dir
   stop_proxy
   cat > "$SETTINGS" << EOF
 {
   "env": {
+    "ANTHROPIC_BASE_URL": "http://localhost:${GEMMA_PROXY_PORT}"
+  },
+  "model": "gemma-4-31b"
+}
+EOF
+  echo "✅ Gemma 4 31B (MLX ローカル) に切り替えました"
+  echo "   設定ファイル：$SETTINGS"
+  echo "   サーバー：$(lsof -ti :${GEMMA_SERVER_PORT} >/dev/null 2>&1 && echo '起動中 ✅' || echo '停止中 ❌')"
+  echo "   プロキシ：$(lsof -ti :${GEMMA_PROXY_PORT} >/dev/null 2>&1 && echo '起動中 ✅' || echo '停止中 ❌')"
+}
+
+start_gemma() {
+  # Start MLX server
+  if lsof -ti :${GEMMA_SERVER_PORT} >/dev/null 2>&1; then
+    echo "ℹ️  Gemma MLX サーバーは既に起動しています (port ${GEMMA_SERVER_PORT})"
+  else
+    echo "🚀 Gemma MLX サーバー起動中..."
+    nohup bash "$GEMMA_SERVER_SCRIPT" > "$GEMMA_LOG" 2>&1 &
+    sleep 3
+    if lsof -ti :${GEMMA_SERVER_PORT} >/dev/null 2>&1; then
+      echo "✅ Gemma MLX サーバー起動しました"
+    else
+      echo "❌ Gemma MLX サーバーの起動に失敗しました"
+      echo "   ログ：$GEMMA_LOG"
+      tail -20 "$GEMMA_LOG"
+    fi
+  fi
+
+  # Start Anthropic proxy
+  if lsof -ti :${GEMMA_PROXY_PORT} >/dev/null 2>&1; then
+    echo "ℹ️  gemma-anthropic-proxy は既に起動しています (port ${GEMMA_PROXY_PORT})"
+  else
+    echo "🚀 gemma-anthropic-proxy 起動中..."
+    GEMMA_SERVER_URL="http://127.0.0.1:${GEMMA_SERVER_PORT}" nohup node "$GEMMA_PROXY_SCRIPT" > "$GEMMA_LOG" 2>&1 &
+    sleep 1
+    if lsof -ti :${GEMMA_PROXY_PORT} >/dev/null 2>&1; then
+      echo "✅ gemma-anthropic-proxy 起動しました"
+    else
+      echo "❌ gemma-anthropic-proxy の起動に失敗しました"
+      echo "   ログ：$GEMMA_LOG"
+      tail -20 "$GEMMA_LOG"
+    fi
+  fi
+}
+
+stop_gemma() {
+  # Stop proxy first
+  local pid=$(lsof -ti :${GEMMA_PROXY_PORT} 2>/dev/null)
+  if [ -n "$pid" ]; then
+    kill $pid 2>/dev/null
+    echo "✅ gemma-anthropic-proxy を停止しました (PID: $pid)"
+  else
+    echo "ℹ️  gemma-anthropic-proxy は起動していません"
+  fi
+
+  # Stop MLX server
+  local pid2=$(lsof -ti :${GEMMA_SERVER_PORT} 2>/dev/null)
+  if [ -n "$pid2" ]; then
+    kill $pid2 2>/dev/null
+    echo "✅ Gemma MLX サーバーを停止しました (PID: $pid2)"
+  else
+    echo "ℹ️  Gemma MLX サーバーは起動していません"
+  fi
+}
+
+# ── プロキシモード ─────────────────────────────────────────────────────────
+use_proxy() {
+  ensure_settings_dir
+  cat > "$SETTINGS" << EOF
+{
+  "env": {
     "ANTHROPIC_BASE_URL": "http://localhost:${PROXY_PORT}"
-  }
+  },
+  "availableModels": ["sonnet", "opus", "opus-4-5", "haiku", "qwen", "qwen-think", "glm"]
 }
 EOF
   echo "✅ プロキシモードに切り替えました"
-  echo "   /model で自由に切り替えられます:"
-  echo "     claude-sonnet-4-6 / qwen3.6-plus / glm-5.1"
+  echo "   /model で切り替えられます: claude / qwen / glm"
   start_proxy
 }
 
@@ -163,10 +242,10 @@ start_proxy() {
     sleep 1
     if lsof -i :${PROXY_PORT} >/dev/null 2>&1; then
       echo "✅ ccproxy 起動しました (port ${PROXY_PORT})"
-      echo "   ログ：$PROXY_LOG"
+      echo "   ログ: $PROXY_LOG"
     else
       echo "❌ ccproxy の起動に失敗しました"
-      echo "   ログ：$PROXY_LOG"
+      echo "   ログ: $PROXY_LOG"
       cat "$PROXY_LOG"
     fi
   fi
@@ -190,20 +269,16 @@ show_status() {
   echo ""
   echo "──────────────────────────────"
 
-  # 使用中のモデルを判定
-  if grep -q "localhost:${PROXY_PORT}" "$SETTINGS" 2>/dev/null; then
-    echo "🔀 現在：プロキシモード (/model で切り替え)"
-    echo "   プロキシ：$(lsof -i :${PROXY_PORT} >/dev/null 2>&1 && echo '起動中 ✅' || echo '停止中 ❌')"
-  elif grep -q "alwaysThinkingEnabled" "$SETTINGS" 2>/dev/null; then
+  if grep -q "qwen-think" "$SETTINGS" 2>/dev/null; then
     echo "🟠 現在：Qwen (DashScope・思考モード)"
   elif grep -q "qwen" "$SETTINGS" 2>/dev/null; then
-    echo "🟡 現在：Qwen (DashScope) モード"
+    echo "🟡 現在: Qwen (DashScope) モード"
   elif grep -q "claude" "$SETTINGS" 2>/dev/null; then
-    echo "🟣 現在：Claude (Anthropic) モード"
+    echo "🟣 現在: Claude (Anthropic) モード"
   elif grep -q "glm" "$SETTINGS" 2>/dev/null; then
-    echo "🟣 現在：GLM (Z.ai) モード"
+    echo "🟣 現在: GLM (Z.ai) モード"
   else
-    echo "⚪ 現在：デフォルト設定（Anthropic アカウントに依存）"
+    echo "⚪ 現在: デフォルト設定（Anthropicアカウントに依存）"
   fi
 }
 
@@ -235,6 +310,18 @@ case "$1" in
     ;;
   status)
     show_status
+    ;;
+  plist)
+    echo "/model で使えるモデル一覧 (proxyモード):"
+    echo ""
+    echo "  sonnet   Claude Sonnet 4.6 (Anthropic)"
+    echo "  opus     Claude Opus 4.5 (Anthropic)"
+    echo "  haiku    Claude Haiku 4.5 (Anthropic)"
+    echo "  qwen     Qwen3.5-Plus (DashScope Coding Plan)"
+    echo "  qwen-think  Qwen3.5-Plus Thinking (DashScope)"
+    echo "  glm      GLM-5.1 (Z.ai Coding Plan)"
+    echo ""
+    echo "使い方: /model sonnet"
     ;;
   *)
     echo "モデルを選んでください:"
