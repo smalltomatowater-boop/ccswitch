@@ -34,6 +34,16 @@ const BACKENDS = [
     prefix: 'glm',
     target: 'https://api.z.ai/api/anthropic',
     token: loadZaiApiKey()
+  },
+  {
+    prefix: 'kimi',
+    target: 'https://coding-intl.dashscope.aliyuncs.com/apps/anthropic',
+    token: process.env.ALIBABACODINGPLAN_API_KEY || ''
+  },
+  {
+    prefix: 'minimax',
+    target: 'https://coding-intl.dashscope.aliyuncs.com/apps/anthropic',
+    token: process.env.ALIBABACODINGPLAN_API_KEY || ''
   }
 ];
 
@@ -56,12 +66,11 @@ const MODEL_ALIASES = {
   'qwen3.5-plus':    'qwen3.5-plus',
   'glm':             'glm-5.1',
   'glm-5.1':         'glm-5.1',
+  'kimi':            'kimi-k2.5',
+  'kimi-k2.5':       'kimi-k2.5',
+  'minimax':         'MiniMax-M2.5',
+  'minimax-m2.5':    'MiniMax-M2.5',
 };
-
-function resolveModelAlias(model) {
-  const m = (model || '').toLowerCase();
-  return MODEL_ALIASES[m] || model;
-}
 
 function resolveModelAlias(model) {
   const m = (model || '').toLowerCase();
@@ -93,6 +102,8 @@ const STATIC_MODELS = [
   { type: 'model', id: 'qwen',            display_name: 'Qwen3.5-Plus (DashScope)',          created_at: '2025-01-01T00:00:00Z' },
   { type: 'model', id: 'qwen-think',      display_name: 'Qwen3.5-Plus Thinking (DashScope)', created_at: '2025-01-01T00:00:00Z' },
   { type: 'model', id: 'glm',             display_name: 'GLM-5.1 (Z.ai)',                    created_at: '2025-01-01T00:00:00Z' },
+  { type: 'model', id: 'kimi',            display_name: 'Kimi-K2.5 (DashScope)',              created_at: '2025-01-01T00:00:00Z' },
+  { type: 'model', id: 'minimax',         display_name: 'MiniMax-M2.5 (DashScope)',           created_at: '2025-01-01T00:00:00Z' },
 ];
 
 function handleModels(req, res) {
@@ -200,4 +211,5 @@ server.listen(PORT, () => {
   console.log('');
   console.log('主力モデル：qwen3.5-plus (ALIBABA Coding Plan)');
   console.log('GLM モデル：glm-5.1 (Z.ai) - 環境変数 ZAI_API_KEY を設定');
+  console.log('追加モデル：kimi-k2.5, MiniMax-M2.5 (ALIBABA Coding Plan)');
 });
