@@ -1,0 +1,10 @@
+# Git管理外ファイル（ccswitch_git.md のコミットルール参照）
+.DS_Store
+*.bak
+*.bak2
+*.bak3
+*.bak4
+
+# リポジトリ非公開メモ
+ccswitch_git.md
+readme_ccswitch*.md
