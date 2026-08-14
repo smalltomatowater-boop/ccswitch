@@ -2,8 +2,8 @@
 # ccswitch.sh - Claude Code のモデルを切り替えるスクリプト
 #
 # ⚠️ 使用前に API キーを設定してください
-#   Qwen (DashScope) 用:
-#     export DASHSCOPE_API_KEY="sk-..."
+#   Coding Plan 用:
+#     export ALIBABACODINGPLAN_API_KEY="sk-..."
 #   GLM (Z.ai) 用:
 #     export ZAI_API_KEY="..."
 #   NVIDIA NIM 用:
@@ -13,10 +13,14 @@
 #   ccswitch start      → プロキシ起動
 #   ccswitch stop       → プロキシ停止
 #   ccswitch claude     → Anthropic Claude (Sonnet) 直結
-#   ccswitch qwen       → Qwen3.6-Plus (DashScope) 直結
-#   ccswitch qwen35     → Qwen3.5-Plus (DashScope) 直結
-#   ccswitch qwen-think → Qwen3.6-Plus (DashScope・思考モード) 直結
-#   ccswitch glm        → GLM-5.1 (Z.ai) 直結
+#   ccswitch qwen       → Qwenモデル選択 (3.7/3.6/3.5/think)
+#   ccswitch qwen37     → Qwen3.7-Plus (Coding Plan) 直結
+#   ccswitch qwen36     → Qwen3.6-Plus (Coding Plan) 直結
+#   ccswitch qwen35     → Qwen3.5-Plus (Coding Plan) 直結
+#   ccswitch qwen-think → Qwen3.6-Plus (Coding Plan・思考モード) 直結
+#   ccswitch glm        → GLM-5.3 (Z.ai) 直結 (/model で 5.3/5.2 切替)
+#   ccswitch glm53      → GLM-5.3 (Z.ai) 直結
+#   ccswitch glm52      → GLM-5.2 (Z.ai) 直結
 #   ccswitch nvidia      → NVIDIA NIM プロキシ (/model で DeepSeek/Nemotron/Llama切替)
 #   ccswitch nvidia-stop → NVIDIA NIM プロキシ停止
 #   ccswitch nvidia-start→ NVIDIA NIM プロキシ起動
@@ -62,30 +66,76 @@ EOF
   echo "   設定ファイル: $SETTINGS"
 }
 
-# ── Qwen3.6-Plus (DashScope) 設定 ────────────────────────────────────────────
-use_qwen() {
+# ── Qwen3.7-Plus (Coding Plan) 設定 ────────────────────────────────────────────
+use_qwen37() {
   ensure_settings_dir
   stop_proxy
-  if [ -z "$DASHSCOPE_API_KEY" ]; then
-    echo "❌ DASHSCOPE_API_KEY が設定されていません"
-    echo "   export DASHSCOPE_API_KEY=\"sk-...\" を実行してください"
+  if [ -z "$ALIBABACODINGPLAN_API_KEY" ]; then
+    echo "❌ ALIBABACODINGPLAN_API_KEY が設定されていません"
+    echo "   export ALIBABACODINGPLAN_API_KEY=\"sk-...\" を実行してください"
     return 1
   fi
   cat > "$SETTINGS" << EOF
 {
   "env": {
-    "ANTHROPIC_AUTH_TOKEN": "${DASHSCOPE_API_KEY}",
-    "ANTHROPIC_BASE_URL": "https://dashscope-intl.aliyuncs.com/apps/anthropic",
+    "ANTHROPIC_AUTH_TOKEN": "${ALIBABACODINGPLAN_API_KEY}",
+    "ANTHROPIC_BASE_URL": "https://coding-intl.dashscope.aliyuncs.com/apps/anthropic",
+    "ANTHROPIC_MODEL": "qwen3.7-plus"
+  },
+  "model": "qwen3.7-plus"
+}
+EOF
+  echo "✅ Qwen3.7-Plus (DashScope Coding Plan) に切り替えました"
+  echo "   設定ファイル: $SETTINGS"
+}
+
+# ── Qwen3.6-Plus (Coding Plan) 設定 ────────────────────────────────────────────
+use_qwen36() {
+  ensure_settings_dir
+  stop_proxy
+  if [ -z "$ALIBABACODINGPLAN_API_KEY" ]; then
+    echo "❌ ALIBABACODINGPLAN_API_KEY が設定されていません"
+    echo "   export ALIBABACODINGPLAN_API_KEY=\"sk-...\" を実行してください"
+    return 1
+  fi
+  cat > "$SETTINGS" << EOF
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "${ALIBABACODINGPLAN_API_KEY}",
+    "ANTHROPIC_BASE_URL": "https://coding-intl.dashscope.aliyuncs.com/apps/anthropic",
     "ANTHROPIC_MODEL": "qwen3.6-plus"
   },
   "model": "qwen3.6-plus"
 }
 EOF
-  echo "✅ Qwen3.6-Plus (DashScope) に切り替えました"
+  echo "✅ Qwen3.6-Plus (DashScope Coding Plan) に切り替えました"
   echo "   設定ファイル: $SETTINGS"
 }
 
-# ── Qwen3.5-Plus (DashScope) 設定 ────────────────────────────────────────────
+# ── Qwen モデル選択メニュー ─────────────────────────────────────────────────
+use_qwen() {
+  echo "Qwenモデルを選んでください:"
+  echo ""
+  options=(
+    "qwen3.7-plus  - Qwen3.7-Plus (Coding Plan)"
+    "qwen3.6-plus  - Qwen3.6-Plus (Coding Plan)"
+    "qwen3.5-plus  - Qwen3.5-Plus (Coding Plan)"
+    "qwen-think    - Qwen3.6-Plus (Coding Plan・思考モード)"
+    "キャンセル"
+  )
+  select opt in "${options[@]}"; do
+    case "$REPLY" in
+      1) use_qwen37; break ;;
+      2) use_qwen36; break ;;
+      3) use_qwen35; break ;;
+      4) use_qwen_think; break ;;
+      5) echo "キャンセルしました"; break ;;
+      *) echo "1〜5 で選んでください" ;;
+    esac
+  done
+}
+
+# ── Qwen3.5-Plus (Coding Plan) 設定 ────────────────────────────────────────────
 use_qwen35() {
   ensure_settings_dir
   stop_proxy
@@ -104,7 +154,7 @@ use_qwen35() {
   "model": "qwen3.5-plus"
 }
 EOF
-  echo "✅ Qwen3.5-Plus (DashScope) に切り替えました"
+  echo "✅ Qwen3.5-Plus (DashScope Coding Plan) に切り替えました"
   echo "   設定ファイル: $SETTINGS"
 }
 
@@ -112,28 +162,30 @@ EOF
 use_qwen_think() {
   ensure_settings_dir
   stop_proxy
-  if [ -z "$DASHSCOPE_API_KEY" ]; then
-    echo "❌ DASHSCOPE_API_KEY が設定されていません"
-    echo "   export DASHSCOPE_API_KEY=\"sk-...\" を実行してください"
+  if [ -z "$ALIBABACODINGPLAN_API_KEY" ]; then
+    echo "❌ ALIBABACODINGPLAN_API_KEY が設定されていません"
+    echo "   export ALIBABACODINGPLAN_API_KEY=\"sk-...\" を実行してください"
     return 1
   fi
   cat > "$SETTINGS" << EOF
 {
   "env": {
-    "ANTHROPIC_AUTH_TOKEN": "${DASHSCOPE_API_KEY}",
-    "ANTHROPIC_BASE_URL": "https://dashscope-intl.aliyuncs.com/apps/anthropic",
+    "ANTHROPIC_AUTH_TOKEN": "${ALIBABACODINGPLAN_API_KEY}",
+    "ANTHROPIC_BASE_URL": "https://coding-intl.dashscope.aliyuncs.com/apps/anthropic",
     "ANTHROPIC_MODEL": "qwen3.6-plus"
   },
   "model": "qwen3.6-plus",
   "alwaysThinkingEnabled": true
 }
 EOF
-  echo "✅ Qwen3.6-Plus (DashScope・思考モード) に切り替えました"
+  echo "✅ Qwen3.6-Plus (DashScope Coding Plan・思考モード) に切り替えました"
   echo "   設定ファイル: $SETTINGS"
 }
 
-# ── GLM-5.1 (Z.ai) 設定 ─────────────────────────────────────────
+# ── GLM (Z.ai) 設定 ─────────────────────────────────────────
+# use_glm [version]  version: 5.3 (デフォルト) / 5.2
 use_glm() {
+  local glm_ver="${1:-5.3}"
   ensure_settings_dir
   stop_proxy
   if [ -z "$ZAI_API_KEY" ]; then
@@ -148,13 +200,24 @@ use_glm() {
     "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
     "API_TIMEOUT_MS": "3000000",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.1",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.1"
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-${glm_ver}",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-${glm_ver}",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME": "GLM-${glm_ver}",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION": "Z.ai GLM-${glm_ver}（sonnetエイリアス・thinking/effort対応）",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_SUPPORTED_CAPABILITIES": "thinking,effort,interleaved_thinking",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL_NAME": "GLM-${glm_ver}",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION": "Z.ai GLM-${glm_ver}（opusエイリアス・thinking/effort対応）",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL_SUPPORTED_CAPABILITIES": "thinking,effort,interleaved_thinking",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME": "GLM-4.5-Air",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL_DESCRIPTION": "Z.ai GLM-4.5-Air（haikuエイリアス・軽量バックグラウンド用）",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL_SUPPORTED_CAPABILITIES": "thinking"
   },
-  "model": "glm-5.1"
+  "availableModels": ["glm-5.3", "glm-5.2"],
+  "model": "glm-${glm_ver}"
 }
 EOF
-  echo "✅ GLM-5.1（Z.ai） に切り替えました"
+  echo "✅ GLM-${glm_ver}（Z.ai） に切り替えました"
+  echo "   /model で glm-5.3 / glm-5.2 が選べます"
   echo "   設定ファイル: $SETTINGS"
 }
 
@@ -372,7 +435,7 @@ use_proxy() {
     "ANTHROPIC_BASE_URL": "http://localhost:${PROXY_PORT}",
     "ANTHROPIC_AUTH_TOKEN": "proxy-mode-local"
   },
-  "availableModels": ["sonnet", "opus", "haiku", "qwen", "qwen-think", "glm", "kimi", "minimax"]
+  "availableModels": ["sonnet", "opus", "haiku", "qwen", "qwen-think", "glm", "glm-5.3", "glm-5.2", "kimi", "minimax"]
 }
 EOF
   echo "✅ プロキシモードに切り替えました"
@@ -416,10 +479,12 @@ show_status() {
   echo ""
   echo "──────────────────────────────"
 
-  if grep -q "qwen-think" "$SETTINGS" 2>/dev/null; then
-    echo "🟠 現在：Qwen (DashScope・思考モード)"
+  if grep -q "qwen3\.7" "$SETTINGS" 2>/dev/null; then
+    echo "🟡 現在: Qwen3.7-Plus (Coding Plan) モード"
+  elif grep -q "qwen-think" "$SETTINGS" 2>/dev/null; then
+    echo "🟠 現在: Qwen (Coding Plan・思考モード)"
   elif grep -q "qwen" "$SETTINGS" 2>/dev/null; then
-    echo "🟡 現在: Qwen (DashScope) モード"
+    echo "🟡 現在: Qwen (Coding Plan) モード"
   elif grep -q "claude" "$SETTINGS" 2>/dev/null; then
     echo "🟣 現在: Claude (Anthropic) モード"
   elif grep -q "glm" "$SETTINGS" 2>/dev/null; then
@@ -452,14 +517,23 @@ case "$1" in
   qwen)
     use_qwen
     ;;
+  qwen37|qwen3.7)
+    use_qwen37
+    ;;
+  qwen36|qwen3.6)
+    use_qwen36
+    ;;
   qwen35|qwen3.5)
     use_qwen35
     ;;
   qwen-think|qwen36-think)
     use_qwen_think
     ;;
-  glm|glm51|glm-5.1)
-    use_glm
+  glm|glm53|glm-5.3)
+    use_glm 5.3
+    ;;
+  glm52|glm-5.2)
+    use_glm 5.2
     ;;
   nvidia|nemotron)
     use_nvidia
@@ -488,9 +562,11 @@ case "$1" in
     echo "  sonnet      Claude Sonnet 4.6 (Anthropic)"
     echo "  opus        Claude Opus 4.7 (Anthropic)"
     echo "  haiku       Claude Haiku 4.5 (Anthropic)"
-    echo "  qwen        Qwen3.5-Plus (DashScope Coding Plan)"
-    echo "  qwen-think  Qwen3.5-Plus Thinking (DashScope Coding Plan)"
-    echo "  glm         GLM-5.1 (Z.ai Coding Plan)"
+    echo "  qwen        Qwen3.6-Plus (Coding Plan)"
+    echo "  qwen-think  Qwen3.6-Plus (Coding Plan・思考モード)"
+    echo "  glm         GLM-5.3 (Z.ai Coding Plan)"
+  echo "  glm-5.3     GLM-5.3 (Z.ai Coding Plan)"
+  echo "  glm-5.2     GLM-5.2 (Z.ai Coding Plan)"
     echo "  kimi        Kimi-K2.5 (DashScope Coding Plan)"
     echo "  minimax     MiniMax-M2.5 (DashScope Coding Plan)"
     echo ""
@@ -501,10 +577,11 @@ case "$1" in
     echo ""
     options=(
       "claude      - Anthropic Claude Sonnet 直結"
-      "qwen        - Qwen3.6-Plus (DashScope) 直結"
-      "qwen35      - Qwen3.5-Plus (DashScope) 直結"
-      "qwen-think  - Qwen3.6-Plus (DashScope・思考モード) 直結"
-      "glm         - GLM-5.1 (Z.ai) 直結"
+      "qwen37      - Qwen3.7-Plus (Coding Plan) 直結"
+      "qwen36      - Qwen3.6-Plus (Coding Plan) 直結"
+      "qwen35      - Qwen3.5-Plus (Coding Plan) 直結"
+      "qwen-think  - Qwen3.6-Plus (Coding Plan・思考モード) 直結"
+      "glm         - GLM-5.3 (Z.ai) 直結 (/model で 5.3/5.2 切替)"
       "nvidia      - NVIDIA NIM プロキシ (/model で切替)"
       "deepseek    - DeepSeek-V4-Pro (NVIDIA NIM・無料) 直結"
       "kimi        - Kimi-K2.5 (DashScope Coding Plan) 直結"
@@ -516,18 +593,19 @@ case "$1" in
     select opt in "${options[@]}"; do
       case "$REPLY" in
         1) use_claude; break ;;
-        2) use_qwen; break ;;
-        3) use_qwen35; break ;;
-        4) use_qwen_think; break ;;
-        5) use_glm; break ;;
-        6) use_nvidia; break ;;
-        7) use_deepseek; break ;;
-        8) use_kimi; break ;;
-        9) use_minimax; break ;;
-        10) use_proxy; break ;;
-        11) show_status; break ;;
-        12) echo "キャンセルしました"; break ;;
-        *) echo "1〜12 で選んでください" ;;
+        2) use_qwen37; break ;;
+        3) use_qwen36; break ;;
+        4) use_qwen35; break ;;
+        5) use_qwen_think; break ;;
+        6) use_glm; break ;;
+        7) use_nvidia; break ;;
+        8) use_deepseek; break ;;
+        9) use_kimi; break ;;
+        10) use_minimax; break ;;
+        11) use_proxy; break ;;
+        12) show_status; break ;;
+        13) echo "キャンセルしました"; break ;;
+        *) echo "1〜13 で選んでください" ;;
       esac
     done
     ;;

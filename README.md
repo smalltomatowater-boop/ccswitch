@@ -25,7 +25,7 @@ cd ccswitch
 sudo ln -sf $(pwd)/ccswitch.sh /usr/local/bin/ccswitch
 ```
 
-#### /switch スキル（UI モードル切替）
+#### /switch スキル（UI モデル切替）
 
 ```bash
 mkdir -p ~/.claude/skills/switch
@@ -47,15 +47,13 @@ cp .claude/skills/switch/SKILL.md ~/.claude/skills/switch/SKILL.md
 API キーを環境変数に設定する。
 
 ```bash
-export DASHSCOPE_API_KEY="sk-..."           # Qwen3.6 直結用
-export ALIBABACODINGPLAN_API_KEY="sk-..."   # Qwen3.5 / Kimi / MiniMax 用 (proxy モードで使用・Coding Plan API)
+export ALIBABACODINGPLAN_API_KEY="sk-..."   # Qwen / Kimi / MiniMax 用 (Coding Plan API・安価)
 export ZAI_API_KEY="..."                     # GLM 用
 export NVIDIA_API_KEY="nvapi-..."            # NVIDIA NIM 用
 ```
 
-> **proxy モードの `qwen` は DashScope Coding Plan API を使用。通常の DashScope より大幅に安価。**
+> **Qwen / Kimi / MiniMax は DashScope Coding Plan API を使用。通常の DashScope より大幅に安価。**
 
-GLM キーは `~/.claude/zai_api_key.sh` に記述しても読み込まれる。
 NVIDIA キーは `~/.claude/nvidia_api_key.sh` に記述しても読み込まれる。
 
 ### 使い方
@@ -75,7 +73,8 @@ ccswitch proxy
 | `/model haiku` | Claude Haiku 4.5 |
 | `/model qwen` | Qwen3.5-Plus (DashScope **Coding Plan** ※安価) |
 | `/model qwen-think` | Qwen3.5-Plus 思考モード (DashScope **Coding Plan** ※安価) |
-| `/model glm` | GLM-5.1 (Z.ai) |
+| `/model glm` | GLM-5.3 (Z.ai) |
+| `/model glm-5.2` | GLM-5.2 (Z.ai) |
 | `/model kimi` | Kimi-K2.5 (DashScope **Coding Plan**) |
 | `/model minimax` | MiniMax-M2.5 (DashScope **Coding Plan**) |
 
@@ -83,14 +82,18 @@ ccswitch proxy
 
 ```bash
 ccswitch claude      # Anthropic Claude Sonnet 直結
-ccswitch qwen        # Qwen3.6-Plus 直結
-ccswitch qwen35      # Qwen3.5-Plus 直結
-ccswitch qwen-think  # Qwen3.6-Plus 思考モード直結
-ccswitch glm         # GLM-5.1 直結
+ccswitch qwen        # Qwen モデル選択メニュー (3.7 / 3.6 / 3.5 / think)
+ccswitch qwen37      # Qwen3.7-Plus (Coding Plan) 直結
+ccswitch qwen36      # Qwen3.6-Plus (Coding Plan) 直結
+ccswitch qwen35      # Qwen3.5-Plus (Coding Plan) 直結
+ccswitch qwen-think  # Qwen3.6-Plus 思考モード (Coding Plan) 直結
+ccswitch glm         # GLM-5.3 (Z.ai) 直結 (/model で 5.3 / 5.2 切替)
+ccswitch glm53       # GLM-5.3 (Z.ai) 直結
+ccswitch glm52       # GLM-5.2 (Z.ai) 直結
 ccswitch kimi        # Kimi-K2.5 (ALIBABA Coding Plan) 直結
 ccswitch minimax     # MiniMax-M2.5 (ALIBABA Coding Plan) 直結
 ccswitch deepseek    # DeepSeek-V4-Pro (NVIDIA NIM・無料) 直結
-ccswitch nvidia      # NVIDIA NIM プロキシモード (/model 切替)
+ccswitch nvidia      # NVIDIA NIM プロキシモード (/model で DeepSeek / Nemotron / Llama 切替)
 ```
 
 #### その他
@@ -162,14 +165,14 @@ This enables the `/switch` command to select model backends.
 Set API keys as environment variables.
 
 ```bash
-export DASHSCOPE_API_KEY="sk-..."           # For Qwen3.6
-export ALIBABACODINGPLAN_API_KEY="sk-..."   # For Qwen3.5 / Kimi / MiniMax (used in proxy)
+export ALIBABACODINGPLAN_API_KEY="sk-..."   # For Qwen / Kimi / MiniMax (Coding Plan API, cheaper)
 export ZAI_API_KEY="..."                     # For GLM
 export NVIDIA_API_KEY="nvapi-..."            # For NVIDIA NIM
 ```
 
-GLM key can also be stored in `~/.claude/zai_api_key.sh`.
-NVIDIA key can also be stored in `~/.claude/nvidia_api_key.sh`.
+> **Qwen / Kimi / MiniMax use the DashScope Coding Plan API — much cheaper than regular DashScope.**
+
+The NVIDIA key can also be stored in `~/.claude/nvidia_api_key.sh`.
 
 ### Usage
 
@@ -188,7 +191,8 @@ Then switch models inside Claude Code with `/model`:
 | `/model haiku` | Claude Haiku 4.5 |
 | `/model qwen` | Qwen3.5-Plus (DashScope **Coding Plan** ※cheaper) |
 | `/model qwen-think` | Qwen3.5-Plus with thinking (DashScope **Coding Plan** ※cheaper) |
-| `/model glm` | GLM-5.1 (Z.ai) |
+| `/model glm` | GLM-5.3 (Z.ai) |
+| `/model glm-5.2` | GLM-5.2 (Z.ai) |
 | `/model kimi` | Kimi-K2.5 (DashScope **Coding Plan**) |
 | `/model minimax` | MiniMax-M2.5 (DashScope **Coding Plan**) |
 
@@ -196,14 +200,18 @@ Then switch models inside Claude Code with `/model`:
 
 ```bash
 ccswitch claude      # Anthropic Claude Sonnet direct
-ccswitch qwen        # Qwen3.6-Plus direct
-ccswitch qwen35      # Qwen3.5-Plus direct
-ccswitch qwen-think  # Qwen3.6-Plus with thinking mode
-ccswitch glm         # GLM-5.1 direct
+ccswitch qwen        # Qwen model selection menu (3.7 / 3.6 / 3.5 / think)
+ccswitch qwen37      # Qwen3.7-Plus (Coding Plan) direct
+ccswitch qwen36      # Qwen3.6-Plus (Coding Plan) direct
+ccswitch qwen35      # Qwen3.5-Plus (Coding Plan) direct
+ccswitch qwen-think  # Qwen3.6-Plus with thinking mode (Coding Plan) direct
+ccswitch glm         # GLM-5.3 (Z.ai) direct (/model switches 5.3 / 5.2)
+ccswitch glm53       # GLM-5.3 (Z.ai) direct
+ccswitch glm52       # GLM-5.2 (Z.ai) direct
 ccswitch kimi        # Kimi-K2.5 (ALIBABA Coding Plan) direct
 ccswitch minimax     # MiniMax-M2.5 (ALIBABA Coding Plan) direct
-ccswitch deepseek    # DeepSeek-V4-Pro (NVIDIA NIM・free) direct
-ccswitch nvidia      # NVIDIA NIM proxy mode (/model switching)
+ccswitch deepseek    # DeepSeek-V4-Pro (NVIDIA NIM, free) direct
+ccswitch nvidia      # NVIDIA NIM proxy mode (/model switches DeepSeek / Nemotron / Llama)
 ```
 
 #### Other commands
